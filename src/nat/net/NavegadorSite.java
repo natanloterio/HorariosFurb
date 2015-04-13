@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
@@ -36,6 +40,23 @@ public class NavegadorSite {
 	private static final int COLUNA_SABADO = 10;
 	private final DefaultHttpClient client = new DefaultHttpClient();
 
+	private HashMap<String, String> materiasSegunda = new HashMap<String, String>();
+	private HashMap<String, String> materiasTerca = new HashMap<String, String>();
+	private HashMap<String, String> materiasQuarta = new HashMap<String, String>();
+	private HashMap<String, String> materiasQuinta = new HashMap<String, String>();
+	private HashMap<String, String> materiasSexta = new HashMap<String, String>();
+	private HashMap<String, String> materiasSabado = new HashMap<String, String>();
+
+	private HashMap<String, ArrayList<String>> grade = new HashMap<String, ArrayList<String>>();
+	private ArrayList<HashMap<String, String>> lista = new ArrayList<HashMap<String, String>>();
+
+	private HashMap<String, String> dicionarioHorarios = new HashMap<String, String>();
+
+	public NavegadorSite() {
+		dicionarioHorarios.put("14/15", "20:20 - 22:00");
+		dicionarioHorarios.put("12/13", "18:30 - 20:00");
+	}
+
 	/**
 	 * Efetua login no site
 	 * 
@@ -49,20 +70,17 @@ public class NavegadorSite {
 	 * @throws UnsupportedEncodingException
 	 * @throws IOException
 	 */
-	public boolean login(final String url, final String user,
-			final String password) throws UnsupportedEncodingException,
-			IOException {
+	public boolean login(final String url, final String user, final String password) throws UnsupportedEncodingException, IOException {
 
-		/* Método POST */
+		/* Mï¿½todo POST */
 		final HttpPost post = new HttpPost(url);
 		boolean result = false;
 
-		/* Configura os parâmetros do POST */
+		/* Configura os parï¿½metros do POST */
 		final List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 		nameValuePairs.add(new BasicNameValuePair("nm_login", user));
 		nameValuePairs.add(new BasicNameValuePair("ds_senha", password));
-		nameValuePairs.add(new BasicNameValuePair("nome_servlet",
-				"https://www.furb.br/academico/servicosAcademicos"));
+		nameValuePairs.add(new BasicNameValuePair("nome_servlet", "https://www.furb.br/academico/servicosAcademicos"));
 
 		/*
 		 * Codifica os parametros.
@@ -73,20 +91,19 @@ public class NavegadorSite {
 		post.setEntity(new UrlEncodedFormEntity(nameValuePairs, Consts.UTF_8));
 
 		/* Define navegador */
-		post.addHeader("User-Agent",
-				"Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0");
+		post.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0");
 
 		/* Efetua o POST */
 		HttpResponse response = client.execute(post);
 
 		/*
-		 * Resposta HTTP: Sempre imprimirá “HTTP/1.1 302 Object moved” (no caso
+		 * Resposta HTTP: Sempre imprimirï¿½ ï¿½HTTP/1.1 302 Object movedï¿½ (no caso
 		 * da devmedia)
 		 */
-		System.out.println("Login form get: " + response.getStatusLine());
+		//System.out.println("Login form get: " + response.getStatusLine());
 
 		/*
-		 * Consome o conteúdo retornado pelo servidor Necessário esvaziar o
+		 * Consome o conteï¿½do retornado pelo servidor Necessï¿½rio esvaziar o
 		 * response antes de usar o httpClient novamente
 		 */
 		EntityUtils.consume(response.getEntity());
@@ -94,10 +111,10 @@ public class NavegadorSite {
 		/*
 		 * Testar se o login funcionou.
 		 * 
-		 * Estratégia: acessar uma página que só está disponível quando se está
-		 * logado Em caso de erro, o servidor irá redirecionar para a página de
+		 * Estratï¿½gia: acessar uma pï¿½gina que sï¿½ estï¿½ disponï¿½vel quando se estï¿½
+		 * logado Em caso de erro, o servidor irï¿½ redirecionar para a pï¿½gina de
 		 * login A pagina de login contem uma string: "Login DevMedia" Se esta
-		 * String estiver presente, significa que o login não foi efetuado com
+		 * String estiver presente, significa que o login nï¿½o foi efetuado com
 		 * sucesso
 		 */
 		/*
@@ -106,21 +123,21 @@ public class NavegadorSite {
 		 * client.execute(get);
 		 * 
 		 * 
-		 * Verifica se a String: "Login DevMedia" está presente
+		 * Verifica se a String: "Login DevMedia" estï¿½ presente
 		 * 
 		 * if (checkSuccess(response)) {
 		 * System.out.println("Conexao Estabelecida!"); result = true; } else {
-		 * System.out.println("Login não-efetuado!"); }
+		 * System.out.println("Login nï¿½o-efetuado!"); }
 		 */
 
 		return true;
 	}
 
 	/**
-	 * Abre página
+	 * Abre pï¿½gina
 	 * 
 	 * @param url
-	 *            - Página a acessar
+	 *            - Pï¿½gina a acessar
 	 * @throws IOException
 	 */
 	public void openPage(final String url) throws IOException {
@@ -130,23 +147,21 @@ public class NavegadorSite {
 	}
 
 	/**
-	 * Encerra conexão
+	 * Encerra conexï¿½o
 	 */
 	public void close() {
 		client.getConnectionManager().shutdown();
 	}
 
 	/**
-	 * Busca por String que indica se o usuário está logado ou não
+	 * Busca por String que indica se o usuï¿½rio estï¿½ logado ou nï¿½o
 	 * 
 	 * @param response
-	 * @return true - Não achou String | false - Achou String
+	 * @return true - Nï¿½o achou String | false - Achou String
 	 * @throws IOException
 	 */
-	private boolean checkSuccess(final HttpResponse response)
-			throws IOException {
-		final BufferedReader rd = new BufferedReader(new InputStreamReader(
-				response.getEntity().getContent()));
+	private boolean checkSuccess(final HttpResponse response) throws IOException {
+		final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String line;
 		boolean found = false;
 		/*
@@ -162,15 +177,14 @@ public class NavegadorSite {
 	}
 
 	/**
-	 * Salva a página
+	 * Salva a pï¿½gina
 	 * 
 	 * @param response
 	 * @return
 	 * @throws IOException
 	 */
 	private String getHTLM(final HttpResponse response) throws IOException {
-		final BufferedReader rd = new BufferedReader(new InputStreamReader(
-				response.getEntity().getContent()));
+		final BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String line = "";
 		StringBuilder sb = new StringBuilder();
 		while ((line = rd.readLine()) != null) {
@@ -180,7 +194,7 @@ public class NavegadorSite {
 	}
 
 	/**
-	 * Roda aplicação
+	 * Roda aplicaï¿½ï¿½o
 	 * 
 	 * @param args
 	 */
@@ -190,10 +204,9 @@ public class NavegadorSite {
 
 		try {
 			// Tenta efetuar login
-			boolean ok = navegador.login(
-					"https://www.furb.br/academico/validaLogon", "", "");
+			boolean ok = navegador.login("https://www.furb.br/academico/validaLogon", "", "");
 			if (ok) {
-				// Acessa página restrita
+				// Acessa pï¿½gina restrita
 				navegador.openPage("https://www.furb.br/academico/uHorario");
 				navegador.listaHorarios();
 
@@ -205,12 +218,11 @@ public class NavegadorSite {
 	}
 
 	private void listaHorarios() throws Exception {
-		/* Método POST */
-		final HttpPost post = new HttpPost(
-				"https://www.furb.br/academico/userHorario");
+		/* Mï¿½todo POST */
+		final HttpPost post = new HttpPost("https://www.furb.br/academico/userHorario");
 		boolean result = false;
 
-		/* Configura os parâmetros do POST */
+		/* Configura os parï¿½metros do POST */
 		final List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 		nameValuePairs.add(new BasicNameValuePair("cd_aluno", "102926"));
 
@@ -223,8 +235,7 @@ public class NavegadorSite {
 		post.setEntity(new UrlEncodedFormEntity(nameValuePairs, Consts.UTF_8));
 
 		/* Define navegador */
-		post.addHeader("User-Agent",
-				"Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0");
+		post.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0");
 
 		/* Efetua o POST */
 		HttpResponse response = client.execute(post);
@@ -251,69 +262,93 @@ public class NavegadorSite {
 			String horarioQuinta = linha[COLUNA_QUINTA_FEIRA];
 			String horarioSexta = linha[COLUNA_SEXTA_FEIRA];
 			String horarioSabado = linha[COLUNA_SABADO];
-			
-			if(horarioSegunda.trim().length()>1){
-				adicionarMateriaSegundaFeira(nomeMaterioa,horarioSegunda);
-			}
-			
-			if(horarioTerca.trim().length()>1){
-				adicionarMateriaTercaFeira(nomeMaterioa,horarioTerca);
-			}
-			
-			if(horarioQuarta.trim().length()>1){
-				adicionarMateriaQuartaFeira(nomeMaterioa,horarioQuarta);
-			}
-			
-			if(horarioQuinta.trim().length()>1){
-				adicionarMateriaQuintaFeira(nomeMaterioa,horarioQuinta);
-			}
-			
-			if(horarioSexta.trim().length()>1){
-				adicionarMateriaSextaFeira(nomeMaterioa,horarioSexta);
-			}
-			
-			if(horarioSabado.trim().length()>1){
-				adicionarMateriaSabado(nomeMaterioa,horarioSabado);
-			}
-			System.out.println(nomeMaterioa);
 
+			if (horarioSegunda.trim().length() > 3) {
+				adicionarMateriaSegundaFeira(nomeMaterioa, horarioSegunda);
+				adicionarMateria(nomeMaterioa, horarioSegunda);
+			}
+
+			if (horarioTerca.trim().length() > 3) {
+				adicionarMateriaTercaFeira(nomeMaterioa, horarioTerca);
+				adicionarMateria(nomeMaterioa, horarioTerca);
+			}
+
+			if (horarioQuarta.trim().length() > 3) {
+				adicionarMateriaQuartaFeira(nomeMaterioa, horarioQuarta);
+				adicionarMateria(nomeMaterioa, horarioQuarta);
+			}
+
+			if (horarioQuinta.trim().length() > 3) {
+				adicionarMateriaQuintaFeira(nomeMaterioa, horarioQuinta);
+				adicionarMateria(nomeMaterioa, horarioQuinta);
+			}
+
+			if (horarioSexta.trim().length() > 3) {
+				adicionarMateriaSextaFeira(nomeMaterioa, horarioSexta);
+				adicionarMateria(nomeMaterioa, horarioSexta);
+			}
+
+			if (horarioSabado.trim().length() > 3) {
+				adicionarMateriaSabado(nomeMaterioa, horarioSabado);
+				adicionarMateria(nomeMaterioa, horarioSabado);
+			}
+			//System.out.println(nomeMaterioa);
+
+		}
+		imprimirMaterias("Segunda", materiasSegunda);
+		imprimirMaterias("Terca", materiasTerca);
+		imprimirMaterias("Quarta", materiasQuarta);
+		imprimirMaterias("Quinta", materiasQuinta);
+		imprimirMaterias("Sexta", materiasSexta);
+	}
+
+	private void imprimirMaterias(String nome, HashMap<String, String> map) {
+		Set<Entry<String, String>> set = map.entrySet();
+		Iterator<Entry<String, String>> iterator = set.iterator();
+		System.out.println(nome);
+		while (iterator.hasNext()) {
+			Entry<String, String> e = iterator.next();
+			String hora = e.getKey().trim().substring(0, 5);
+			if (dicionarioHorarios.containsKey(hora)) {
+				hora = dicionarioHorarios.get(hora);
+			}
+			System.out.println(hora + ":" + e.getValue());
+		}
+
+	}
+
+	private void adicionarMateria(String materia, String horario) {
+		if (grade.containsKey(materia)) {
+			grade.get(materia).add(horario);
+		} else {
+			ArrayList<String> lista = new ArrayList<String>();
+			lista.add(horario);
+			grade.put(materia, lista);
 		}
 	}
 
-	private void adicionarMateriaSabado(String nomeMaterioa,
-			String horarioSabado) {
-		// TODO Auto-generated method stub
-		
+	private void adicionarMateriaSabado(String nomeMaterioa, String horarioSabado) {
+		materiasSabado.put(horarioSabado, nomeMaterioa);
 	}
 
-	private void adicionarMateriaSextaFeira(String nomeMaterioa,
-			String horarioSexta) {
-		// TODO Auto-generated method stub
-		
+	private void adicionarMateriaSextaFeira(String nomeMaterioa, String horarioSexta) {
+		materiasSexta.put(horarioSexta, nomeMaterioa);
 	}
 
-	private void adicionarMateriaQuintaFeira(String nomeMaterioa,
-			String horarioQuinta) {
-		// TODO Auto-generated method stub
-		
+	private void adicionarMateriaQuintaFeira(String nomeMaterioa, String horarioQuinta) {
+		materiasQuinta.put(horarioQuinta, nomeMaterioa);
 	}
 
-	private void adicionarMateriaQuartaFeira(String nomeMaterioa,
-			String horarioQuarta) {
-		// TODO Auto-generated method stub
-		
+	private void adicionarMateriaQuartaFeira(String nomeMaterioa, String horarioQuarta) {
+		materiasQuarta.put(horarioQuarta, nomeMaterioa);
 	}
 
-	private void adicionarMateriaTercaFeira(String nomeMaterioa,
-			String horarioTerca) {
-		// TODO Auto-generated method stub
-		
+	private void adicionarMateriaTercaFeira(String nomeMaterioa, String horarioTerca) {
+		materiasTerca.put(horarioTerca, nomeMaterioa);
 	}
 
-	private void adicionarMateriaSegundaFeira(String nomeMaterioa,
-			String horarioSegunda) {
-		// TODO Auto-generated method stub
-		
+	private void adicionarMateriaSegundaFeira(String nomeMaterioa, String horarioSegunda) {
+		materiasSegunda.put(horarioSegunda, nomeMaterioa);
 	}
 
 	private String[][] converterParaArray(Elements tables) {
