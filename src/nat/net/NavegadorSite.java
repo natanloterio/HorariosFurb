@@ -224,7 +224,7 @@ public class NavegadorSite {
 
 		/* Configura os par�metros do POST */
 		final List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-		nameValuePairs.add(new BasicNameValuePair("cd_aluno", "102926"));
+		nameValuePairs.add(new BasicNameValuePair("cd_aluno", "176241"));
 
 		/*
 		 * Codifica os parametros.
